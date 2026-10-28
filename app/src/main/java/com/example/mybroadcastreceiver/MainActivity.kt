@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -13,6 +14,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -37,7 +39,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    @SuppressLint("UnspecifiedRegisterReceiverFlag")
+
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -53,6 +56,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         }
 
         binding?.btnPermission?.setOnClickListener(this)
+        binding?.btnDownload?.setOnClickListener(this)
 
         downloadReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
@@ -60,7 +64,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             }
         }
         val downloadIntentFilter = IntentFilter(ACTION_DOWNLOAD_STATUS)
-        registerReceiver(downloadReceiver, downloadIntentFilter)
+        registerReceiver(downloadReceiver, downloadIntentFilter, RECEIVER_EXPORTED)
     }
 
     override fun onClick(v: View?) {
@@ -69,6 +73,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             R.id.btn_download -> {
                 Handler(Looper.getMainLooper()).postDelayed({
                     val notifyFinishIntent = Intent().setAction(ACTION_DOWNLOAD_STATUS)
+                    notifyFinishIntent.setPackage(packageName) // Menambahkan target package
                     sendBroadcast(notifyFinishIntent)
                 }, 3000)
             }
